@@ -1,6 +1,6 @@
 from typing import Optional, Union
-from pythonpackages.nqtr.disabled_solution import DisabledClass
 
+from pythonpackages.nqtr.disabled_solution import DisabledClass
 from pythonpackages.renpy_utility.flags import *
 from pythonpackages.renpy_utility.renpy_custom_log import *
 from pythonpackages.renpy_utility.utility import *
@@ -8,6 +8,9 @@ from pythonpackages.renpy_utility.utility import *
 
 class Button(DisabledClass):
     """Wiki: https://github.com/DRincs-Productions/NQTR-toolkit/wiki/Button"""
+
+    _align = (0, 0)
+    _name = ""
 
     def __init__(
         self,
@@ -25,8 +28,6 @@ class Button(DisabledClass):
     ):
         # DisabledClass init
         super().__init__(disabled=disabled)
-        # Button init
-        self.align = None
 
         self.name = name
         self.label_name = label_name
@@ -34,10 +35,8 @@ class Button(DisabledClass):
         self.button_icon_selected = button_icon_selected
         self.picture_in_background = picture_in_background
         self.picture_in_background_selected = picture_in_background_selected
-        if not xalign == None:
-            self.xalign = xalign
-        if not yalign == None:
-            self.yalign = yalign
+        self.xalign = 0 if xalign is None else xalign
+        self.yalign = 0 if yalign is None else yalign
         self.hidden = hidden
         self.default_label_name = default_label_name
 
@@ -48,23 +47,28 @@ class Button(DisabledClass):
 
     @name.setter
     def name(self, value: Optional[str]):
-        self._name = value or ""
-        if isNullOrEmpty(self._name):
+        if not value:
             log_warn("You have set name to None or empty", "nqtr.button.Button.name")
+
+            return
+
+        self._name = value
 
     @property
     def label_name(self) -> Optional[str]:
         """onClick label name"""
-        if not isNullOrEmpty(self._label_name):
+        if self._label_name:
             return self._label_name
-        elif not isNullOrEmpty(self.default_label_name):
+
+        if self.default_label_name:
             return self.default_label_name
-        else:
-            log_warn(
-                "In the button " + self.name + ", label_name is null or empty",
-                "nqtr.button.Button.label_name",
-            )
-        return
+
+        log_warn(
+            f"In the button {self.name}, label_name is null or empty",
+            "nqtr.button.Button.label_name",
+        )
+
+        return None
 
     @label_name.setter
     def label_name(self, value: Optional[str]):
@@ -73,16 +77,16 @@ class Button(DisabledClass):
     @property
     def button_icon(self) -> Optional[str]:
         """Button icon"""
-        if not isNullOrEmpty(self._button_icon):
+        if self._button_icon:
             return self._button_icon
-        else:
-            log_warn(
-                "In the button "
-                + self.name
-                + ", button_icon is null or empty, use is_button_icon to check if it is a button icon button",
-                "nqtr.button.Button.button_icon",
-            )
-            return None
+
+        log_warn(
+            f"In the button {self.name}, "
+            "button_icon is null or empty, "
+            "use is_button_icon to check if it is a button icon button",
+            "nqtr.button.Button.button_icon",
+        )
+        return None
 
     @button_icon.setter
     def button_icon(self, value: Optional[str]):
@@ -91,10 +95,10 @@ class Button(DisabledClass):
     @property
     def button_icon_selected(self) -> Optional[str]:
         """Selected button icon"""
-        if not isNullOrEmpty(self._button_icon_selected):
+        if self._button_icon_selected:
             return self._button_icon_selected
-        else:
-            return self.button_icon
+
+        return self.button_icon
 
     @button_icon_selected.setter
     def button_icon_selected(self, value: Optional[str]):
@@ -102,11 +106,12 @@ class Button(DisabledClass):
 
     @property
     def picture_in_background(self) -> Optional[str]:
-        """Picture in background: Is an button that is started by clicking on an image in the room."""
-        if not isNullOrEmpty(self._picture_in_background):
+        """Picture in background: Is an button that is started by clicking on an image
+        in the room."""
+        if self._picture_in_background:
             return self._picture_in_background
-        else:
-            return None
+
+        return None
 
     @picture_in_background.setter
     def picture_in_background(self, value: Optional[str]):
@@ -115,10 +120,10 @@ class Button(DisabledClass):
     @property
     def picture_in_background_selected(self) -> Optional[str]:
         """Selected picture in background"""
-        if not isNullOrEmpty(self._picture_in_background_selected):
+        if self._picture_in_background_selected:
             return self._picture_in_background_selected
-        else:
-            return self.picture_in_background
+
+        return self.picture_in_background
 
     @picture_in_background_selected.setter
     def picture_in_background_selected(self, value: Optional[str]):
@@ -136,48 +141,46 @@ class Button(DisabledClass):
     @property
     def xalign(self) -> Union[int, float]:
         """X align"""
-        if self._align != None:
-            return self._align[0]
-        else:
+        if self._align is None:
             return 0
+
+        return self._align[0]
 
     @xalign.setter
     def xalign(self, value: Optional[Union[int, float]]):
-        if value == None:
+        if not value and str(value) != "0":
             log_warn(
-                "In the button "
-                + self.name
-                + ", you have set xalign to None, use 0 instead",
+                f"In the button {self.name}, "
+                "you have set xalign to None or other booleani false, use 0 instead",
                 "nqtr.button.Button.xalign",
             )
             value = 0
-        if self._align == None:
-            self._align = (value, 0)
-        else:
-            self._align = (value, self._align[1])
+
+        yval = 0 if self._align is None else self._align[1]
+
+        self._align = (value, yval)
 
     @property
     def yalign(self) -> Union[int, float]:
         """Y align"""
-        if self._align != None:
-            return self._align[1]
-        else:
+        if self._align is None:
             return 0
+
+        return self._align[1]
 
     @yalign.setter
     def yalign(self, value: Optional[Union[int, float]]):
-        if value == None:
+        if not value and str(value) != "0":
             log_warn(
-                "In the button "
-                + self.name
-                + ", you have set yalign to None, use 0 instead",
+                f"In the button {self.name}, "
+                "you have set yalign to None or other booleani false, use 0 instead",
                 "nqtr.button.Button.yalign",
             )
             value = 0
-        if self._align == None:
-            self._align = (0, value)
-        else:
-            self._align = (self._align[0], value)
+
+        xval = 0 if self._align is None else self._align[0]
+
+        self._align = (xval, value)
 
     @property
     def hidden(self) -> Union[bool, str]:
@@ -213,11 +216,12 @@ class Button(DisabledClass):
         """ "If hidden is a string: get the value of the flags system"""
         if isinstance(self.hidden, str):
             return get_flags(self.hidden, flags)
-        elif (
+
+        if (
             check_if_has_icon
             and not self.is_button
             and not self.is_picture_in_background
         ):
             return True
-        else:
-            return self.hidden
+
+        return self.hidden
